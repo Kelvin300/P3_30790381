@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <title>Pagina Administrativa</title>
+        
+        
+        <link rel="stylesheet" href="public\css\editar.css">
+        <!-- Bootstrap Core CSS -->
+        <link href="\public\css\bootstrap.min.css" rel="stylesheet">
+
+        <!-- MetisMenu CSS -->
+        <link href="public\css\metisMenu.min.css" rel="stylesheet">
+
+        <!-- Timeline CSS -->
+        <link href="public\css\timeline.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="public\css\startmin.css" rel="stylesheet">
+
+        <!-- Morris Charts CSS -->
+        <link href="public\css\morris.css" rel="stylesheet">
+
+        <!-- Custom Fonts -->
+        <link href="public\css\font-awesome.min.css" rel="stylesheet" type="text/css">
+
+    </head>
+
+    <body>
+
+        <div id="wrapper">
+
+            <!-- Navigation -->
+            <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+                <div class="navbar-header">
+                    <a class="navbar-brand">Administracion</a>
+                </div>
+
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+
+                <ul class="nav navbar-nav navbar-left navbar-top-links">
+                    <li><a href="#"><i class="fa fa-home fa-fw"></i> Pagina Principal</a></li>
+                </ul>
+                <!-- /.navbar-top-links -->
+              </nav>
+            <div id="page-wrapper">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <h1 class="page-header">Productos</h1>
+                        </div>
+                    </div>
+                
+                    <div class="table-responsive"> <!-- Agregar un div con la clase table-responsive -->
+                        <table class="table table-striped table-bordered table-hover">
+                          <tr>
+                            <th>Id</th>
+                            <th>Nombre</th>
+                            <th>Código</th>
+                            <th>Precio</th>
+                            <th>Descripción</th>
+                            <th>Marca</th>
+                            <th>Peso</th>
+                            <th>Categoría_id</th>
+                            <th>Acciones</th> <!-- Agregar una columna para los botones -->
+                          </tr>
+                          <% if (data.length > 0) { %>
+                          <% data.forEach(row => { %>
+                          <tr>
+                            <td><%=row.id %></td>
+                            <td><%= row.nombre %></td>
+                            <td><%= row.codigo %></td>
+                            <td><%= row.precio %></td>
+                            <td><%= row.descripcion %></td>
+                            <td><%= row.marca %></td>
+                            <td><%= row.peso %></td>
+                            <td><%= row.categoria_id %></td>
+                            <td> <!-- Agregar los botones en esta celda -->
+                              <a href="/productos/<%= row.id %>/edit" class="btn btn-primary">Editar</a> <!-- Un botón para editar el producto -->
+                              <a href="/productos/<%= row.id %>/delete" class="btn btn-danger">Eliminar</a> <!-- Un botón para eliminar el producto -->
+                              <a href="/productos/<%= row.id %>/add_images" class="btn btn-success">Agregar Imagenes</a> <!-- Un botón para agregar imagenes -->
+                            </td>
+                          </tr>
+                          <% }) %>
+                          <% } else { %>
+                          <tr>
+                            <td colspan="9" class="text-center">No hay productos</td>
+                          </tr>
+                          <% } %>
+                        </table>
+                      </div>
+                      <a href="/productos" class="btn btn-success">Agregar Producto</a> <!-- Un botón para agregar un nuevo producto -->
+
+                      <h1 class="page-header">Categorias</h1>
+
+                      <div class="table-responsive"> <!-- Agregar un div con la clase table-responsive -->
+                        <table class="table table-striped table-bordered table-hover"> <!-- Agregar las clases de bootstrap a la tabla -->
+                          <tr>
+                            <!-- <th>Categoria_id</th> -->
+                            <th>Id</th>
+                            <th>Nombre</th>
+                            <th>Acciones</th>
+                          </tr>
+                          <% if (data2.length > 0) { %>
+                          <% data2.forEach(row2 => { %> <!-- Recorrer el arreglo data que contiene los datos de los productos -->
+                          <tr>
+                             <td><%= row2.id %></td>
+                            <td><%= row2.nombre %></td> <!-- Mostrar el nombre del producto -->
+                            <td> <!-- Agregar los botones en esta celda -->
+                                <a href="/categorias/<%= row2.id %>/edit" class="btn btn-primary">Editar</a> <!-- Un botón para editar el producto -->
+                                <a href="/categorias/<%= row2.id %>/delete" class="btn btn-danger">Eliminar</a> <!-- Un botón para eliminar el producto -->
+                              </td>
+                           </tr>
+                           <% }) %>
+                           <% } else { %>
+                            <tr>
+                                <td colspan="9" class="text-center">No hay categorias</td>
+                              </tr>
+                            <% } %>
+                         </table>
+                       </div>
+
+                       <a href="/categorias" class="btn btn-success">Agregar Categoria</a> <!-- Un botón para agregar un nuevo producto -->
+
+                       <h1 class="page-header">Imagenes</h1>
+
+                      <div class="table-responsive"> <!-- Agregar un div con la clase table-responsive -->
+                        <p><b>Nota:</b>En el campo "Destacado" El numero <b>1</b> significa que esa imagen es considerada destacada y <b>0</b> lo contrario.</p>
+                        <table class="table table-striped table-bordered table-hover"> <!-- Agregar las clases de bootstrap a la tabla -->
+                          <tr>
+                            <!-- <th>Categoria_id</th> -->
+                            <th>Producto_id</th>
+                            <th>Url</th>
+                            <th>Destacado 1)Si - 0)No</th>
+                            <th>Acciones</th>
+                          </tr>
+                          <% if (data3.length > 0) { %>
+                          <% data3.forEach(row3 => { %> <!-- Recorrer el arreglo data que contiene los datos de los productos -->
+                          <tr>
+                            <td><%= row3.producto_id %></td>
+                            <td><%= row3.url %></td> <!-- Mostrar el nombre del producto -->
+                            <td><%= row3.destacado %></td>
+                            <td> <!-- Agregar los botones en esta celda -->
+                                <a href="/productos/<%= row3.producto_id %>/delete_images" class="btn btn-danger">Eliminar</a> <!-- Un botón para eliminar el producto -->
+                              </td>
+                           </tr>
+                           <% }) %>
+                           <% } else { %>
+                            <tr>
+                                <td colspan="9" class="text-center">No hay imagenes</td>
+                              </tr>
+                            <% } %>
+                         </table>
+                       </div>
+                 </div>     
+                    </div>
+                </div>
+                
+                     
+
+        <!-- Agregar productos -->
+        <script src="public\js\editar.js"></script>
+        <!-- jQuery -->
+        <script src="public\js\jquery.min.js"></script>
+
+        <!-- Bootstrap Core JavaScript -->
+        <script src="public\js\bootstrap.min.js"></script>
+
+        <!-- Metis Menu Plugin JavaScript -->
+        <script src="public\js\metisMenu.min.js"></script>
+
+        <!-- Morris Charts JavaScript -->
+        <script src="public\js\raphael.min.js"></script>
+        <script src="public\js\morris.min.js"></script>
+        <script src="public\js\morris-data.js"></script>
+
+        <!-- Custom Theme JavaScript -->
+        <script src="public\js\startmin.js"></script>
+
+    </body>
+
+</html>
