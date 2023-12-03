@@ -7,6 +7,69 @@ var router = express.Router();
 const USER = process.env.USER
 const PASSWORD = process.env.PASSWORD
 
+router.get('/producto/:id', (req, res) => {
+  let sql = 'SELECT productos.*, categorias.nombre AS categoria, GROUP_CONCAT(imagenes.url) AS imagenes FROM productos LEFT JOIN categorias ON productos.categoria_id = categorias.id LEFT JOIN imagenes ON productos.id = imagenes.producto_id WHERE productos.id = ? GROUP BY productos.id';  db.get(sql, [req.params.id], (err, row) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send('Error al consultar la base de datos');
+    } else {
+
+      res.render('vista_producto', { producto: row });
+    }
+  });
+});
+
+router.get('/', (req, res) => {
+  let sqlCategorias = 'SELECT DISTINCT nombre FROM categorias';
+  db.all(sqlCategorias, [], (err, categorias) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send('Error al consultar la base de datos');
+    } else {
+      let sql = 'SELECT productos.*, categorias.nombre AS categoria, imagenes.url AS imagen_destacada FROM productos LEFT JOIN categorias ON productos.categoria_id = categorias.id LEFT JOIN imagenes ON productos.id = imagenes.producto_id WHERE imagenes.destacado = 1';
+      let params = [];
+
+      if (req.query.nombre) {
+        sql += ' AND productos.nombre LIKE ?';
+        params.push('%' + req.query.nombre + '%');
+      }
+
+      if (req.query.peso) {
+        sql += ' AND productos.peso LIKE ?';
+        params.push('%' + req.query.peso + '%');
+      }
+
+      if (req.query.categoria) {
+        sql += ' AND categorias.nombre LIKE ?';
+        params.push('%' + req.query.categoria + '%');
+      }
+
+      if (req.query.marca) {
+        sql += ' AND productos.marca LIKE ?';
+        params.push('%' + req.query.marca + '%');
+      }
+
+      if (req.query.descripcion) {
+        sql += ' AND productos.descripcion LIKE ?';
+        params.push('%' + req.query.descripcion + '%');
+      }
+
+      db.all(sql, params, (err, rows) => {
+        if (err) {
+          console.error(err.message);
+          res.status(500).send('Error al consultar la base de datos');
+        } else {
+          let mensaje = '';
+          if (rows.length === 0) {
+            mensaje = 'No se encontraron productos que coincidan con tu búsqueda.';
+          }
+          
+          res.render('productos_listado', { data: rows, categorias: categorias, mensaje: mensaje });
+        }
+      });
+    }
+  });
+});
 
 router.get('/productos', (req, res) => {
   db.all('SELECT * FROM categorias', (err, rows) => {
