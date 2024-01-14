@@ -36,13 +36,38 @@ db.serialize(() => {
     console.log('Tabla imagenes OK');
   });
 
-  // Insertar algunos datos de prueba en las tablas
-  // db.run("INSERT INTO categorias (nombre) VALUES ('Electrónica')");
-  // db.run("INSERT INTO categorias (nombre) VALUES ('Deportes')");
-  // db.run("INSERT INTO productos (nombre, codigo, precio, descripcion, marca, peso, categoria_id) VALUES ('Laptop', 'LPT-001', 500.00, 'Una laptop potente y ligera', 'Asus', 300, 1)");
-  // db.run("INSERT INTO productos (nombre, codigo, precio, descripcion, marca, peso, categoria_id) VALUES ('Bicicleta', 'BCT-002', 300.00, 'Una bicicleta resistente y veloz', 'Haro', 10, 2)");
-  // db.run("INSERT INTO imagenes (producto_id, url, destacado) VALUES (1, 'https://example.com/laptop.jpg', 1)");
-  // db.run("INSERT INTO imagenes (producto_id, url, destacado) VALUES (2, 'https://example.com/bicicleta.jpg', 1)");
+  // db.run('DROP TABLE IF EXISTS usuarios', (err) => {
+  //   if (err) {
+  //     console.error(err.message);
+  //   }
+  //   console.log('Tabla usuarios eliminada');
+  // });
+
+  db.run('CREATE TABLE IF NOT EXISTS usuarios (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT, password TEXT)', (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log('Tabla usuarios OK');
+  });
+
+  db.run(`CREATE TABLE IF NOT EXISTS compras (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    cliente_id INTEGER,
+    producto_id INTEGER,
+    cantidad INTEGER,
+    total_pagado REAL,
+    fecha DATE,
+    ip_cliente TEXT,
+    FOREIGN KEY (cliente_id) REFERENCES usuarios (id),
+    FOREIGN KEY (producto_id) REFERENCES productos (id)
+  )`, (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log('Tabla compras OK');
+  });
+  
+  
 
   // Consultar los datos de las tablas
 //   db.each("SELECT p.nombre AS producto, c.nombre AS categoria FROM productos p JOIN categorias c ON p.categoria_id = c.rowid", (err, row) => {

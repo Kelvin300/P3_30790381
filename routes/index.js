@@ -6,6 +6,48 @@ require('dotenv').config()
 var router = express.Router();
 const USER = process.env.USER
 const PASSWORD = process.env.PASSWORD
+// const authentication = require("../views/public/authentication.controllers.js");
+const loginController = require("../views/public/controllers/loginController")
+
+
+
+router.get('/loginUser', loginController.login)
+router.post('/loginUser', loginController.auth)
+router.get('/registerUser', loginController.register)
+router.post('/registerUser', loginController.storeUser)
+router.get('/logout', loginController.logout)
+
+function checkAuthenticated(req, res, next) {
+  if (req.session.loggedin) {
+    next();
+  } else {
+    res.redirect('/loginUser');
+  }
+}
+
+router.get('/pagar', checkAuthenticated, (req, res) => {
+  db.get("SELECT * FROM productos WHERE id = ?", [req.query.producto_id], (err, producto) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send('Error al consultar la base de datos');
+    } else {
+      db.get("SELECT url FROM imagenes WHERE producto_id = ? AND destacado = 1", [req.query.producto_id], (err, imagen) => {
+        if (err) {
+          console.error(err.message);
+          res.status(500).send('Error al consultar la base de datos');
+        } else {
+          // Asegúrate de que 'producto' e 'imagen' se están pasando a la vista correctamente
+          res.render('pago', { producto: producto, imagen: imagen, name: req.session.name });
+        }
+      });
+    }
+  });
+});
+
+
+
+
+
 
 router.get('/producto/:id', (req, res) => {
   let sql = 'SELECT productos.*, categorias.nombre AS categoria, GROUP_CONCAT(imagenes.url) AS imagenes FROM productos LEFT JOIN categorias ON productos.categoria_id = categorias.id LEFT JOIN imagenes ON productos.id = imagenes.producto_id WHERE productos.id = ? GROUP BY productos.id';  db.get(sql, [req.params.id], (err, row) => {
@@ -14,61 +56,66 @@ router.get('/producto/:id', (req, res) => {
       res.status(500).send('Error al consultar la base de datos');
     } else {
 
-      res.render('vista_producto', { producto: row });
+      res.render('vista_producto', { producto: row, name: req.session.name });
     }
   });
 });
 
 router.get('/', (req, res) => {
-  let sqlCategorias = 'SELECT DISTINCT nombre FROM categorias';
-  db.all(sqlCategorias, [], (err, categorias) => {
-    if (err) {
-      console.error(err.message);
-      res.status(500).send('Error al consultar la base de datos');
-    } else {
-      let sql = 'SELECT productos.*, categorias.nombre AS categoria, imagenes.url AS imagen_destacada FROM productos LEFT JOIN categorias ON productos.categoria_id = categorias.id LEFT JOIN imagenes ON productos.id = imagenes.producto_id WHERE imagenes.destacado = 1';
-      let params = [];
-
-      if (req.query.nombre) {
-        sql += ' AND productos.nombre LIKE ?';
-        params.push('%' + req.query.nombre + '%');
-      }
-
-      if (req.query.peso) {
-        sql += ' AND productos.peso LIKE ?';
-        params.push('%' + req.query.peso + '%');
-      }
-
-      if (req.query.categoria) {
-        sql += ' AND categorias.nombre LIKE ?';
-        params.push('%' + req.query.categoria + '%');
-      }
-
-      if (req.query.marca) {
-        sql += ' AND productos.marca LIKE ?';
-        params.push('%' + req.query.marca + '%');
-      }
-
-      if (req.query.descripcion) {
-        sql += ' AND productos.descripcion LIKE ?';
-        params.push('%' + req.query.descripcion + '%');
-      }
-
-      db.all(sql, params, (err, rows) => {
-        if (err) {
-          console.error(err.message);
-          res.status(500).send('Error al consultar la base de datos');
-        } else {
-          let mensaje = '';
-          if (rows.length === 0) {
-            mensaje = 'No se encontraron productos que coincidan con tu búsqueda.';
-          }
-          
-          res.render('productos_listado', { data: rows, categorias: categorias, mensaje: mensaje });
+  // if(req.session.loggedin == true){
+    let sqlCategorias = 'SELECT DISTINCT nombre FROM categorias';
+    db.all(sqlCategorias, [], (err, categorias) => {
+      if (err) {
+        console.error(err.message);
+        res.status(500).send('Error al consultar la base de datos');
+      } else {
+        let sql = 'SELECT productos.*, categorias.nombre AS categoria, imagenes.url AS imagen_destacada FROM productos LEFT JOIN categorias ON productos.categoria_id = categorias.id LEFT JOIN imagenes ON productos.id = imagenes.producto_id WHERE imagenes.destacado = 1';
+        let params = [];
+  
+        if (req.query.nombre) {
+          sql += ' AND productos.nombre LIKE ?';
+          params.push('%' + req.query.nombre + '%');
         }
-      });
-    }
-  });
+  
+        if (req.query.peso) {
+          sql += ' AND productos.peso LIKE ?';
+          params.push('%' + req.query.peso + '%');
+        }
+  
+        if (req.query.categoria) {
+          sql += ' AND categorias.nombre LIKE ?';
+          params.push('%' + req.query.categoria + '%');
+        }
+  
+        if (req.query.marca) {
+          sql += ' AND productos.marca LIKE ?';
+          params.push('%' + req.query.marca + '%');
+        }
+  
+        if (req.query.descripcion) {
+          sql += ' AND productos.descripcion LIKE ?';
+          params.push('%' + req.query.descripcion + '%');
+        }
+  
+        db.all(sql, params, (err, rows) => {
+          if (err) {
+            console.error(err.message);
+            res.status(500).send('Error al consultar la base de datos');
+          } else {
+            let mensaje = '';
+            if (rows.length === 0) {
+              mensaje = 'No se encontraron productos que coincidan con tu búsqueda.';
+            }
+            
+            res.render('productos_listado', { data: rows, categorias: categorias, mensaje: mensaje, name: req.session.name });
+          }
+        });
+      }
+    });
+// } else {
+//     res.redirect('/loginUser')
+// }
+  
 });
 
 router.get('/productos', (req, res) => {
@@ -292,5 +339,25 @@ router.post('/login', async (req, res) => {
         res.redirect('login')
     }
 })
+// router.get('/registrar_usuarios', (req, res) => {
+//   db.all('SELECT * FROM usuarios', [], (err, rows) => {
+//     if (err) {
+//       throw err;
+//     }
+//     rows.forEach((row) => {
+//       console.log(row);
+//     });
+//   });
+//   res.render('registrar_usuarios', {err: null})
+// })
+
+// router.get('/loguear_usuarios', (req, res) => {
+//   res.render('loguear_usuarios')
+// })
+// router.post('/api/register', authentication.register)
+// router.post('/api/login', authentication.login)
+
+
+
 
 module.exports = router

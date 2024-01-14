@@ -36,12 +36,62 @@
         <![endif]-->
     </head>
   <body>
+
+    <div class="header-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="user-menu">
+                        <ul>
+                            <!-- <li><a href="#"><i class="fa fa-user"></i> My Account</a></li>
+                            <li><a href="#"><i class="fa fa-heart"></i> Wishlist</a></li>
+                            <li><a href="cart.html"><i class="fa fa-user"></i> My Cart</a></li> -->
+                            
+                            <% if (name) { %>
+                                <li><i class="fa fa-user"></i> <b><%= name %></b></li>
+                                <li><a href="/logout"><i class="fa fa-user"></i> Cerrar Sesion</a></li>
+                              <% } else { %>
+                                <li><a href="/registerUser"><i class="fa fa-user"></i> Registrarse</a></li>
+                                <li><a href="/loginUser"><i class="fa fa-user"></i> Logearse</a></li>
+                              <% } %>
+                            
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- <div class="col-md-4">
+                    <div class="header-right">
+                        <ul class="list-unstyled list-inline">
+                            <li class="dropdown dropdown-small">
+                                <a data-toggle="dropdown" data-hover="dropdown" class="dropdown-toggle" href="#"><span class="key">currency :</span><span class="value">USD </span><b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">USD</a></li>
+                                    <li><a href="#">INR</a></li>
+                                    <li><a href="#">GBP</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="dropdown dropdown-small">
+                                <a data-toggle="dropdown" data-hover="dropdown" class="dropdown-toggle" href="#"><span class="key">language :</span><span class="value">English </span><b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">English</a></li>
+                                    <li><a href="#">French</a></li>
+                                    <li><a href="#">German</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div> -->
+            </div>
+        </div>
+    </div>
+
     <div class="site-branding-area">
         <div class="container">
             <div class="row">
                 <div class="col-sm-6">
                     <div class="logo">
-                        <h1><a href="./"><img height="25%" width="25%" src="https://th.bing.com/th/id/OIP.DYIRlJ0XL-AKG0O5fe2wFAHaJg?w=167&h=215&c=7&r=0&o=5&pid=1.7"> </a>FISHUP - Productos de pesca</h1>
+                        <h1><a href="./"><img height="20%" width="20%" src="https://th.bing.com/th/id/OIP.DYIRlJ0XL-AKG0O5fe2wFAHaJg?w=167&h=215&c=7&r=0&o=5&pid=1.7"> </a>FISHUP - Productos de pesca</h1>
                     </div>
                 </div>
                 
@@ -143,10 +193,10 @@
                                             <ins>$<%= producto.precio %></ins> 
                                         </div>    
                                         
-                                        <form action="" class="cart">
-
+                                        <form action="/pagar" method="get" class="cart">
+                                            <input type="hidden" name="producto_id" value="<%= producto.id %>">
                                             <button class="add_to_cart_button" type="submit">Comprar</button>
-                                        </form>   
+                                          </form>
                                         
                                         <div class="product-inner-category">
                                             <p><b>Categoria:</b> <%= producto.categoria %></p>

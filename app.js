@@ -1,4 +1,5 @@
 const express = require('express');
+const session = require('express-session');
 const app = express();
 const sqlite3 = require('sqlite3').verbose()
 var cookieParser = require('cookie-parser');
@@ -7,6 +8,15 @@ const bodyParser = require('body-parser')
 app.use(bodyParser.json())
 require('dotenv').config()
 app.use(bodyParser.urlencoded({ extended: false }))
+
+
+app.use(session({
+  secret: 'key',
+  resave: false,
+  saveUninitialized: true
+}));
+
+
 
 app.set('view engine', 'ejs');
 
