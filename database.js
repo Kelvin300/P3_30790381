@@ -67,6 +67,20 @@ db.serialize(() => {
     console.log('Tabla compras OK');
   });
   
+  db.run(`CREATE TABLE IF NOT EXISTS calificaciones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    usuario_id INTEGER,
+    producto_id INTEGER,
+    calificacion INTEGER,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
+    FOREIGN KEY (producto_id) REFERENCES productos (id)
+)`, (err) => {
+    if (err) {
+      console.error(err.message);
+    }
+    console.log('Tabla calificaciones OK');
+});
+
   
 
   // Consultar los datos de las tablas

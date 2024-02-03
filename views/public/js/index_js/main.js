@@ -121,6 +121,7 @@ listViewButton.addEventListener('click', () => {
   productsList.classList.add('table-style-on')
 });
 
+
 // $(document).ready(function(){
 //     $(".owl-carousel").owlCarousel({
 //       items: 1,

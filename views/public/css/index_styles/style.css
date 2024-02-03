@@ -1,3 +1,11 @@
+.fa-star {
+    color: gray;
+}
+
+.fa-star:hover, .fa-star.selected {
+    color: gold;
+}
+
 .owl-carousel .owl-nav button.owl-next, 
 .owl-carousel .owl-nav button.owl-prev {
   position: absolute;

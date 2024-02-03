@@ -59,29 +59,6 @@
                     </div>
                 </div>
                 
-                <!-- <div class="col-md-4">
-                    <div class="header-right">
-                        <ul class="list-unstyled list-inline">
-                            <li class="dropdown dropdown-small">
-                                <a data-toggle="dropdown" data-hover="dropdown" class="dropdown-toggle" href="#"><span class="key">currency :</span><span class="value">USD </span><b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="#">USD</a></li>
-                                    <li><a href="#">INR</a></li>
-                                    <li><a href="#">GBP</a></li>
-                                </ul>
-                            </li>
-
-                            <li class="dropdown dropdown-small">
-                                <a data-toggle="dropdown" data-hover="dropdown" class="dropdown-toggle" href="#"><span class="key">language :</span><span class="value">English </span><b class="caret"></b></a>
-                                <ul class="dropdown-menu">
-                                    <li><a href="#">English</a></li>
-                                    <li><a href="#">French</a></li>
-                                    <li><a href="#">German</a></li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
-                </div> -->
             </div>
         </div>
     </div>
@@ -205,32 +182,44 @@
                                         <div role="tabpanel">
                                             <ul class="product-tab" role="tablist">
                                                 <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Descripcion</a></li>
-                                                <!-- <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Reviews</a></li> -->
+                                                <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Reviews</a></li>
                                             </ul>
                                             <div class="tab-content">
                                                 <div role="tabpanel" class="tab-pane fade in active" id="home">
                                                     <h2>Descripcion del producto</h2>  
                                                     <p><%= producto.descripcion %></p>
                                                 </div>
+                                                <!-- <form action="/calificacion" method="post">
+                                                    <input type="hidden" name="usuario_id" value="<%= name %>">
+                                                    <input type="hidden" name="producto_id" value="<%= producto.id %>">
+                                                    <select name="calificacion">
+                                                        <option value="1">1</option>
+                                                        <option value="2">2</option>
+                                                        <option value="3">3</option>
+                                                        <option value="4">4</option>
+                                                        <option value="5">5</option>
+                                                    </select>
+                                                    <input type="submit" value="Calificar">
+                                                </form> -->
                                                 <div role="tabpanel" class="tab-pane fade" id="profile">
                                                     <h2>Reviews</h2>
-                                                    <div class="submit-review">
-                                                        <p><label for="name">Name</label> <input name="name" type="text"></p>
-                                                        <p><label for="email">Email</label> <input name="email" type="email"></p>
-                                                        <div class="rating-chooser">
-                                                            <p>Your rating</p>
-    
-                                                            <div class="rating-wrap-post">
-                                                                <i class="fa fa-star"></i>
-                                                                <i class="fa fa-star"></i>
-                                                                <i class="fa fa-star"></i>
-                                                                <i class="fa fa-star"></i>
-                                                                <i class="fa fa-star"></i>
+                                                    <form action="/calificacion" method="post">
+                                                        <input type="hidden" name="usuario_id" value="<%= name %>">
+                                                        <input type="hidden" name="producto_id" value="<%= producto.id %>">
+                                                        <div class="submit-review">
+                                                            <div class="rating-chooser">
+                                                                <p>Tu calificacion</p>
+                                                                <div class="rating-wrap-post">
+                                                                    <% for(var i=1; i<=5; i++) { %>
+                                                                        <i class="fa fa-star" data-value="<%= i %>" <% if(i <= calificacion) { %>class="selected"<% } %>></i>
+                                                                    <% } %>
+                                                                    <input type="hidden" name="calificacion" id="calificacion">
+                                                                </div>
                                                             </div>
+                                                            
+                                                            <p><input type="submit" value="Submit"></p>
                                                         </div>
-                                                        <p><label for="review">Your review</label> <textarea name="review" id="" cols="30" rows="10"></textarea></p>
-                                                        <p><input type="submit" value="Submit"></p>
-                                                    </div>
+                                                    </form>
                                                 </div>
                                             </div>
                                         </div>
@@ -265,7 +254,7 @@
     <script src="/public/js/index_js/jquery.easing.1.3.min.js"></script>
     
     <!-- Main Script -->
-    <script src="/public/js/index_js/main.js"></script>
+    <!-- <script src="/public/js/index_js/main.js"></script> -->
     <script>
         $(document).ready(function(){
           $(".owl-carousel").owlCarousel({
@@ -273,6 +262,51 @@
             nav: true
           });
         });
+        $(document).ready(function() {
+    var valorSeleccionado = 0;
+
+    $('.fa-star').on('mouseenter', function() {
+        var valor = $(this).data('value');
+
+        // Resaltar las estrellas seleccionadas
+        $('.fa-star').each(function() {
+            if ($(this).data('value') <= valor) {
+                $(this).addClass('hover');
+            } else {
+                $(this).removeClass('hover');
+            }
+        });
+    });
+
+    $('.fa-star').on('mouseleave', function() {
+        // Remover la selección cuando el cursor sale de las estrellas
+        $('.fa-star').removeClass('hover');
+        $('.fa-star').each(function() {
+            if ($(this).data('value') <= valorSeleccionado) {
+                $(this).addClass('selected');
+            } else {
+                $(this).removeClass('selected');
+            }
+        });
+    });
+
+    $('.fa-star').on('click', function() {
+        valorSeleccionado = $(this).data('value');
+        $('#calificacion').val(valorSeleccionado);
+        $('.fa-star').each(function() {
+            if ($(this).data('value') <= valorSeleccionado) {
+                $(this).addClass('selected');
+            } else {
+                $(this).removeClass('selected');
+            }
+        });
+    });
+});
+
+
+
+
+
       </script>
   </body>
 </html>

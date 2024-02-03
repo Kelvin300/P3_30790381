@@ -6,8 +6,83 @@ require('dotenv').config()
 var router = express.Router();
 const USER = process.env.USER
 const PASSWORD = process.env.PASSWORD
+const axios = require('axios');
+
+router.post('/submit-payment', (req, res) => {
+  // Simula una respuesta exitosa de la API
+  const response = {
+    data: {
+      success: true
+    }
+  };
+
+  if (response.data.success) {
+    const producto_id = req.body.productId; // Obtiene el id del producto del formulario
+    const cliente_id = req.session.name; // Obtiene el id del cliente de la sesión
+    const cantidad = 1; // Ajusta esto con la cantidad
+    const total_pagado = req.body.productPrice; // Ajusta esto con el total pagado
+    const fecha = new Date().toISOString();
+    const ip_cliente = req.ip;
+
+    const sql = `INSERT INTO compras (cliente_id, producto_id, cantidad, total_pagado, fecha, ip_cliente) VALUES (?, ?, ?, ?, ?, ?)`;
+
+    db.run(sql, [cliente_id, producto_id, cantidad, total_pagado, fecha, ip_cliente], function(err) {
+      if (err) {
+        return console.error(err.message);
+      }
+      console.log(`Se ha realizado una compra con el id ${this.lastID}`);
+      console.log(cliente_id, producto_id, cantidad, total_pagado, fecha, ip_cliente)
+    });
+
+    // Redirige al usuario a la vista principal
+    res.render('pago_realizado', {name: req.session.name})
+  } else {
+    res.send('La validación del pago falló');
+  }
+});
+
+
+
 // const authentication = require("../views/public/authentication.controllers.js");
 const loginController = require("../views/public/controllers/loginController")
+
+router.post('/calificacion', (req, res) => {
+  // Verificar si el usuario está logueado
+  if (!req.session.loggedin) {
+      // Redirigir al usuario a la vista de inicio de sesión
+      return res.redirect('/loginUser');
+  }
+
+  const { usuario_id, producto_id, calificacion } = req.body;
+
+  // Verificar si ya existe una calificación para este usuario y producto
+  db.get(`SELECT * FROM calificaciones WHERE usuario_id = ? AND producto_id = ?`, [usuario_id, producto_id], (err, row) => {
+      if (err) {
+          return console.error(err.message);
+      }
+
+      if (row) {
+          // Si ya existe una calificación, actualizarla
+          db.run(`UPDATE calificaciones SET calificacion = ? WHERE usuario_id = ? AND producto_id = ?`, [calificacion, usuario_id, producto_id], function(err) {
+              if (err) {
+                  return console.error(err.message);
+              }
+              console.log(`Se ha actualizado la calificación con el id ${this.lastID}`);
+              res.json({ id: this.lastID });
+          });
+      } else {
+          // Si no existe una calificación, guardar la nueva calificación
+          db.run(`INSERT INTO calificaciones (usuario_id, producto_id, calificacion) VALUES (?, ?, ?)`, [usuario_id, producto_id, calificacion], function(err) {
+              if (err) {
+                  return console.error(err.message);
+              }
+              console.log(`Se ha insertado una fila con el id ${this.lastID}`);
+              res.json({ id: this.lastID });
+          });
+      }
+  });
+});
+
 
 
 
@@ -44,22 +119,39 @@ router.get('/pagar', checkAuthenticated, (req, res) => {
   });
 });
 
-
-
-
-
-
 router.get('/producto/:id', (req, res) => {
-  let sql = 'SELECT productos.*, categorias.nombre AS categoria, GROUP_CONCAT(imagenes.url) AS imagenes FROM productos LEFT JOIN categorias ON productos.categoria_id = categorias.id LEFT JOIN imagenes ON productos.id = imagenes.producto_id WHERE productos.id = ? GROUP BY productos.id';  db.get(sql, [req.params.id], (err, row) => {
+  let sql = 'SELECT productos.*, categorias.nombre AS categoria, GROUP_CONCAT(imagenes.url) AS imagenes FROM productos LEFT JOIN categorias ON productos.categoria_id = categorias.id LEFT JOIN imagenes ON productos.id = imagenes.producto_id WHERE productos.id = ? GROUP BY productos.id';
+  
+  db.get(sql, [req.params.id], (err, row) => {
     if (err) {
       console.error(err.message);
       res.status(500).send('Error al consultar la base de datos');
     } else {
-
-      res.render('vista_producto', { producto: row, name: req.session.name });
+      // Si el usuario está logueado, obtener su calificación para este producto
+      if (req.session.loggedin) {
+        let sqlCalificacion = 'SELECT calificacion FROM calificaciones WHERE usuario_id = ? AND producto_id = ?';
+        
+        db.get(sqlCalificacion, [req.session.name, req.params.id], (err, rowCalificacion) => {
+          if (err) {
+            console.error(err.message);
+            res.status(500).send('Error al consultar la base de datos');
+          } else {
+            // console.log('Calificación:', rowCalificacion ? rowCalificacion.calificacion : 0);
+            // Renderizar la vista y pasar el producto, el nombre del usuario y la calificación
+            res.render('vista_producto', { producto: row, name: req.session.name, calificacion: rowCalificacion ? rowCalificacion.calificacion : 0 });
+            // console.log(calificaion)
+          }
+        });
+      } else {
+        
+        // Si el usuario no está logueado, renderizar la vista sin calificación
+        res.render('vista_producto', { producto: row, name: req.session.name, calificacion: 0 });
+      }
     }
   });
 });
+
+
 
 router.get('/', (req, res) => {
   // if(req.session.loggedin == true){
@@ -339,23 +431,7 @@ router.post('/login', async (req, res) => {
         res.redirect('login')
     }
 })
-// router.get('/registrar_usuarios', (req, res) => {
-//   db.all('SELECT * FROM usuarios', [], (err, rows) => {
-//     if (err) {
-//       throw err;
-//     }
-//     rows.forEach((row) => {
-//       console.log(row);
-//     });
-//   });
-//   res.render('registrar_usuarios', {err: null})
-// })
 
-// router.get('/loguear_usuarios', (req, res) => {
-//   res.render('loguear_usuarios')
-// })
-// router.post('/api/register', authentication.register)
-// router.post('/api/login', authentication.login)
 
 
 
