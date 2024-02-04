@@ -168,6 +168,14 @@
                           <input type="text" name="peso" id="peso">
                         </div>
                         <div style="flex: 1; margin-right: 10px;">
+                            <label for="descripcion">Descripcion</label>
+                            <input type="text" name="descripcion" id="descripcion">
+                          </div>
+                        <div style="flex: 1; margin-right: 10px;">
+                            <label for="promedio">Promedio</label>
+                            <input type="number" step="0.1" min="1" max="5" name="promedio" id="promedio">
+                          </div>
+                        <div style="flex: 1; margin-right: 10px;">
                           <label for="categoria">Categoria</label>
                           <select class="form-control" name="categoria" id="categoria">
                             <option value="">Selecciona una categoría</option>
@@ -176,48 +184,47 @@
                             <% } %>
                           </select>
                         </div>
-                        <div style="flex: 1; margin-right: 10px;">
-                          <label for="descripcion">Descripcion</label>
-                          <input type="text" name="descripcion" id="descripcion">
-                        </div>
+                        
                         <div style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end;">
                             <button type="submit" class="btn btn-primary">Filtrar</button>
                           </div>
+                          
+                          
                       </form>                      
                 </div>
               </div>
               
-            <div id="products-container" class="grid-view">
-                        <% for (var i = 0; i < data.length; i++) { %>
-                            <a href="/producto/<%= data[i].id %>">
-                                <div class="col-md-3 col-sm-6">
-                                <div class="single-shop-product">
-                                    <div class="product-upper">
-                                    <img src="<%= data[i].imagen_destacada %>" alt="<%= data[i].nombre %>" >
-                                    </div>
-                                    <div class="product-info">
-                                    <h2><%= data[i].nombre %></h2>
-                                    <p><b>Marca:</b> <%= data[i].marca %></p>
-                                    <p><b>Peso (g):</b> <%= data[i].peso %></p>
-                                    <p><b>Categoria:</b> <%= data[i].categoria %></p>
-                                    <p><%= data[i].descripcion %></p>
-                                    <div class="product-carousel-price">
-                                        <ins>$<%= data[i].precio %></ins>
-                                    </div>
-                                    <!-- <div class="product-action">
-                                        <a href="#" class="add_to_cart_button">Agregar al carrito</a>
-                                    </div> -->
-                                    </div>
-                                </div>
-                                </div>
-                            </a>
-                        <% } %>
-                        <% if (mensaje) { %>
-                            <p><%= mensaje %></p>
-                          <% } %>
+              <div id="products-container" class="grid-view">
+                <% for (var i = 0; i < data.length; i++) { %>
+                  <a href="/producto/<%= data[i].id %>">
+                    <div class="col-md-3 col-sm-6">
+                      <div class="single-shop-product">
+                        <div class="product-upper">
+                          <img src="<%= data[i].imagen_destacada %>" alt="<%= data[i].nombre %>">
+                        </div>
+                        <div class="product-info">
+                          <h2><%= data[i].nombre %></h2>
+                          <p><b>Marca:</b> <%= data[i].marca %></p>
+                          <p><b>Peso (g):</b> <%= data[i].peso %></p>
+                          <p><b>Categoria:</b> <%= data[i].categoria %></p>
+                          <p><b>Promedio de calificaciones:</b> <%= data[i].promedio %> <i class="fa-star fa" style="color: gold;"></i></p>
+                          <p><%= data[i].descripcion %></p>
                           
-            </div>
-            <table id="product-table" class="table-style-off table table-responsive table-striped table-bordered table-hover">
+                          <div class="product-carousel-price">
+                            <ins>$<%= data[i].precio %></ins>
+                          </div>
+                          <!-- Aquí se muestra el promedio de las calificaciones -->
+                         
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                <% } %>
+                <% if (mensaje) { %>
+                  <p><%= mensaje %></p>
+                <% } %>
+              </div>
+              <table id="product-table" class="table-style-off table table-responsive table-striped table-bordered table-hover">
                 <tr>
                   <th>Imagen destacada</th>
                   <th>Nombre</th>
@@ -225,7 +232,10 @@
                   <th>Peso (g)</th>
                   <th>Descripcion</th>
                   <th>Categoria</th>
+                  <th>Promedio de calificaciones</th>
                   <th>Precio</th>
+                  <!-- Aquí se agrega una nueva celda para el promedio de las calificaciones -->
+                  
                 </tr>
                 <% for (var i = 0; i < data.length; i++) { %>
                 <tr>
@@ -235,94 +245,19 @@
                   <td><%= data[i].peso %></td>
                   <td><%= data[i].descripcion %></td>
                   <td><%= data[i].categoria %></td>
+                  <td><%= data[i].promedio %></td>
                   <td><%= data[i].precio %></td>
+                  <!-- Aquí se muestra el promedio de las calificaciones -->
+                  
                 </tr>
                 <% } %>
-                  
               </table>
+              
                           
                 
           
         </div>
-    <!-- </div> -->
-
-
-    <!-- <div class="footer-top-area">
-        <div class="zigzag-bottom"></div>
-        <div class="container">
-            <div class="row">
-                <div class="col-md-3 col-sm-6">
-                    <div class="footer-about-us">
-                        <h2>u<span>Stora</span></h2>
-                        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Perferendis sunt id doloribus vero quam laborum quas alias dolores blanditiis iusto consequatur, modi aliquid eveniet eligendi iure eaque ipsam iste, pariatur omnis sint! Suscipit, debitis, quisquam. Laborum commodi veritatis magni at?</p>
-                        <div class="footer-social">
-                            <a href="#" target="_blank"><i class="fa fa-facebook"></i></a>
-                            <a href="#" target="_blank"><i class="fa fa-twitter"></i></a>
-                            <a href="#" target="_blank"><i class="fa fa-youtube"></i></a>
-                            <a href="#" target="_blank"><i class="fa fa-linkedin"></i></a>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-3 col-sm-6">
-                    <div class="footer-menu">
-                        <h2 class="footer-wid-title">User Navigation </h2>
-                        <ul>
-                            <li><a href="">My account</a></li>
-                            <li><a href="">Order history</a></li>
-                            <li><a href="">Wishlist</a></li>
-                            <li><a href="">Vendor contact</a></li>
-                            <li><a href="">Front page</a></li>
-                        </ul>                        
-                    </div>
-                </div>
-                
-                <div class="col-md-3 col-sm-6">
-                    <div class="footer-menu">
-                        <h2 class="footer-wid-title">Categories</h2>
-                        <ul>
-                            <li><a href="">Mobile Phone</a></li>
-                            <li><a href="">Home accesseries</a></li>
-                            <li><a href="">LED TV</a></li>
-                            <li><a href="">Computer</a></li>
-                            <li><a href="">Gadets</a></li>
-                        </ul>                        
-                    </div>
-                </div>
-                
-                <div class="col-md-3 col-sm-6">
-                    <div class="footer-newsletter">
-                        <h2 class="footer-wid-title">Newsletter</h2>
-                        <p>Sign up to our newsletter and get exclusive deals you wont find anywhere else straight to your inbox!</p>
-                        <div class="newsletter-form">
-                            <input type="email" placeholder="Type your email">
-                            <input type="submit" value="Subscribe">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="footer-bottom-area">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-8">
-                    <div class="copyright">
-                       <p>&copy; 2015 uCommerce. All Rights Reserved. <a href="http://www.freshdesignweb.com" target="_blank">freshDesignweb.com</a></p>
-                    </div>
-                </div>
-                
-                <div class="col-md-4">
-                    <div class="footer-card-icon">
-                        <i class="fa fa-cc-discover"></i>
-                        <i class="fa fa-cc-mastercard"></i>
-                        <i class="fa fa-cc-paypal"></i>
-                        <i class="fa fa-cc-visa"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div> -->
+    
    
     <!-- Latest jQuery form server -->
     <script src="https://code.jquery.com/jquery.min.js"></script>

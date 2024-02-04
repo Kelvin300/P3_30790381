@@ -177,12 +177,14 @@
                                         
                                         <div class="product-inner-category">
                                             <p><b>Categoria:</b> <%= producto.categoria %></p>
-                                        </div> 
+                                        </div>
+                                        <p><b>Promedio de calificaciones: <%= promedio %></b> <i class="fa fa-star" style="color: gold;"></i></p>
+
                                         
                                         <div role="tabpanel">
                                             <ul class="product-tab" role="tablist">
                                                 <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Descripcion</a></li>
-                                                <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Reviews</a></li>
+                                                <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Calificaciones</a></li>
                                             </ul>
                                             <div class="tab-content">
                                                 <div role="tabpanel" class="tab-pane fade in active" id="home">
@@ -202,24 +204,28 @@
                                                     <input type="submit" value="Calificar">
                                                 </form> -->
                                                 <div role="tabpanel" class="tab-pane fade" id="profile">
-                                                    <h2>Reviews</h2>
-                                                    <form action="/calificacion" method="post">
-                                                        <input type="hidden" name="usuario_id" value="<%= name %>">
-                                                        <input type="hidden" name="producto_id" value="<%= producto.id %>">
-                                                        <div class="submit-review">
+                                                    <h2>Calificaciones</h2>
+                                                    <% if (name) { %>
+                                                        <!-- Aquí va tu formulario de calificación -->
+                                                        <form action="/calificacion" method="post">
+                                                          <input type="hidden" name="usuario_id" value="<%= name %>">
+                                                          <input type="hidden" name="producto_id" value="<%= producto.id %>">
+                                                          <div class="submit-review">
                                                             <div class="rating-chooser">
-                                                                <p>Tu calificacion</p>
-                                                                <div class="rating-wrap-post">
-                                                                    <% for(var i=1; i<=5; i++) { %>
-                                                                        <i class="fa fa-star" data-value="<%= i %>" <% if(i <= calificacion) { %>class="selected"<% } %>></i>
-                                                                    <% } %>
-                                                                    <input type="hidden" name="calificacion" id="calificacion">
-                                                                </div>
+                                                              <p>Tu calificacion</p>
+                                                              <div class="rating-wrap-post">
+                                                                <% for(var i=1; i<=5; i++) { %>
+                                                                  <i class="fa fa-star" data-value="<%= i %>" <% if(i <= calificacion) { %>class="selected"<% } %>></i>
+                                                                <% } %>
+                                                                <input type="hidden" name="calificacion" id="calificacion">
+                                                              </div>
                                                             </div>
-                                                            
                                                             <p><input type="submit" value="Submit"></p>
-                                                        </div>
-                                                    </form>
+                                                          </div>
+                                                        </form>
+                                                      <% } else { %>
+                                                        <p>Debes iniciar sesión para calificar este producto.</p>
+                                                      <% } %>
                                                 </div>
                                             </div>
                                         </div>

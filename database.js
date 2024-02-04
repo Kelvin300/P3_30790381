@@ -81,7 +81,16 @@ db.serialize(() => {
     console.log('Tabla calificaciones OK');
 });
 
-  
+db.run(`CREATE TABLE IF NOT EXISTS recuperaciones (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT,
+  token TEXT
+  )`, (err) => {
+  if (err) {
+    console.error(err.message);
+  }
+  console.log('Tabla recuperaciones OK');
+});
 
   // Consultar los datos de las tablas
 //   db.each("SELECT p.nombre AS producto, c.nombre AS categoria FROM productos p JOIN categorias c ON p.categoria_id = c.rowid", (err, row) => {

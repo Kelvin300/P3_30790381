@@ -7,6 +7,102 @@ var router = express.Router();
 const USER = process.env.USER
 const PASSWORD = process.env.PASSWORD
 const axios = require('axios');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+
+router.post('/actualizarPass/:token', (req, res) => {
+  // Busca el token en la base de datos
+  db.get('SELECT * FROM recuperaciones WHERE token = ?', [req.body.token], (err, row) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send('Error al buscar el token en la base de datos');
+    } else if (row) {
+      // Si el token existe, hashea la nueva contraseña
+      bcrypt.hash(req.body.newPassword, 12).then(hash => {
+        // Actualiza la contraseña del usuario en la base de datos
+        db.run('UPDATE usuarios SET password = ? WHERE email = ?', [hash, row.email], (err) => {
+          if (err) {
+            console.error(err.message);
+            res.status(500).send('Error al actualizar la contraseña en la base de datos');
+          } else {
+            console.log('Se la actualizado el pass ')
+            // Redirige al usuario a la página de inicio de sesión
+            res.redirect('/loginUser');
+          }
+        });
+      });
+    } else {
+      console.log('El token no existe')// Si el token no existe, redirige al usuario a la página de inicio
+      res.redirect('/');
+    }
+  });
+});
+
+
+router.get('/recuperarPass/:token', (req, res) => {
+  // Busca el token en la base de datos
+  db.get('SELECT * FROM recuperaciones WHERE token = ?', [req.params.token], (err, row) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send('Error al buscar el token en la base de datos');
+    } else if (row) {
+      // Si el token existe, renderiza la vista para actualizar la contraseña
+      res.render('actualizarPass', {token: req.params.token, name: req.session.name});
+      console.log(req.params.token)
+    } else {
+      // Si el token no existe, redirige al usuario a la página de inicio
+      res.redirect('/');
+    }
+  });
+});
+
+
+router.post('/recuperarPass', (req, res) => {
+  // Genera un token
+  let token = crypto.randomBytes(20).toString('hex');
+
+  // Guarda el token y el correo electrónico en la base de datos
+  db.run('INSERT INTO recuperaciones (email, token) VALUES (?, ?)', [req.body.email, token], (err) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send('Error al guardar el token en la base de datos');
+    } else {
+      console.log(token)
+      // Configura el correo
+      let mailOptions = {
+        from: 'Fishup Store',
+        to: req.body.email,
+        subject: 'Recuperación de Contraseña',
+        text: 'Para recuperar tu contraseña, por favor visita el siguiente enlace: \nhttp://' + req.headers.host + '/recuperarPass/' + token
+      };
+
+      // Envia el correo
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email enviado: ' + info.response);
+        }
+      });
+
+      res.redirect('/loginUser');
+    }
+  });
+});
+
+router.get('/recuperarPass', (req, res) => {
+  res.render('recuperarPass', {name: req.session.name});
+});
+
+// Configura el transporte de correo
+let transporter = nodemailer.createTransport({
+  service: 'gmail', // usa el servicio de Gmail
+  auth: {
+    user: 'kendalltrece@gmail.com', // tu correo
+    pass: 'wolootvvtmvrwjri' // tu contraseña
+  }
+});
 
 router.post('/submit-payment', (req, res) => {
   // Simula una respuesta exitosa de la API
@@ -30,6 +126,22 @@ router.post('/submit-payment', (req, res) => {
       if (err) {
         return console.error(err.message);
       }
+
+      let mailOptions = {
+        from: 'kendalltrece@gmail.com',
+        to: cliente_id,
+        subject: 'Has Comprado un producto!' ,
+        text: 'Has comprado 1 ' + req.body.productName + ' $' + req.body.productPrice
+      };
+
+      // Envia el correo
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email enviado: ' + info.response);
+        }
+      });
       console.log(`Se ha realizado una compra con el id ${this.lastID}`);
       console.log(cliente_id, producto_id, cantidad, total_pagado, fecha, ip_cliente)
     });
@@ -47,41 +159,42 @@ router.post('/submit-payment', (req, res) => {
 const loginController = require("../views/public/controllers/loginController")
 
 router.post('/calificacion', (req, res) => {
-  // Verificar si el usuario está logueado
-  if (!req.session.loggedin) {
-      // Redirigir al usuario a la vista de inicio de sesión
-      return res.redirect('/loginUser');
-  }
+  const usuario_id = req.body.usuario_id;
+  const producto_id = req.body.producto_id;
+  const calificacion = req.body.calificacion;
 
-  const { usuario_id, producto_id, calificacion } = req.body;
+  // Primero, verifica si el usuario ya ha calificado este producto
+  const sqlCheck = 'SELECT * FROM calificaciones WHERE usuario_id = ? AND producto_id = ?';
+  db.get(sqlCheck, [usuario_id, producto_id], (err, row) => {
+    if (err) {
+      return console.error(err.message);
+    }
 
-  // Verificar si ya existe una calificación para este usuario y producto
-  db.get(`SELECT * FROM calificaciones WHERE usuario_id = ? AND producto_id = ?`, [usuario_id, producto_id], (err, row) => {
-      if (err) {
+    if (row) {
+      // Si el usuario ya ha calificado este producto, actualiza la calificación
+      const sqlUpdate = 'UPDATE calificaciones SET calificacion = ? WHERE usuario_id = ? AND producto_id = ?';
+      db.run(sqlUpdate, [calificacion, usuario_id, producto_id], function(err) {
+        if (err) {
           return console.error(err.message);
-      }
-
-      if (row) {
-          // Si ya existe una calificación, actualizarla
-          db.run(`UPDATE calificaciones SET calificacion = ? WHERE usuario_id = ? AND producto_id = ?`, [calificacion, usuario_id, producto_id], function(err) {
-              if (err) {
-                  return console.error(err.message);
-              }
-              console.log(`Se ha actualizado la calificación con el id ${this.lastID}`);
-              res.json({ id: this.lastID });
-          });
-      } else {
-          // Si no existe una calificación, guardar la nueva calificación
-          db.run(`INSERT INTO calificaciones (usuario_id, producto_id, calificacion) VALUES (?, ?, ?)`, [usuario_id, producto_id, calificacion], function(err) {
-              if (err) {
-                  return console.error(err.message);
-              }
-              console.log(`Se ha insertado una fila con el id ${this.lastID}`);
-              res.json({ id: this.lastID });
-          });
-      }
+        }
+        console.log(`Calificación actualizada para el usuario ${usuario_id} y el producto ${producto_id}`);
+      });
+    } else {
+      // Si el usuario no ha calificado este producto, inserta una nueva calificación
+      const sqlInsert = 'INSERT INTO calificaciones (usuario_id, producto_id, calificacion) VALUES (?, ?, ?)';
+      db.run(sqlInsert, [usuario_id, producto_id, calificacion], function(err) {
+        if (err) {
+          return console.error(err.message);
+        }
+        console.log(`Nueva calificación insertada para el usuario ${usuario_id} y el producto ${producto_id}`);
+      });
+    }
   });
+
+  // Redirige al usuario a la vista del producto
+  res.redirect('/producto/' + producto_id);
 });
+
 
 
 
@@ -119,6 +232,8 @@ router.get('/pagar', checkAuthenticated, (req, res) => {
   });
 });
 
+
+
 router.get('/producto/:id', (req, res) => {
   let sql = 'SELECT productos.*, categorias.nombre AS categoria, GROUP_CONCAT(imagenes.url) AS imagenes FROM productos LEFT JOIN categorias ON productos.categoria_id = categorias.id LEFT JOIN imagenes ON productos.id = imagenes.producto_id WHERE productos.id = ? GROUP BY productos.id';
   
@@ -127,88 +242,109 @@ router.get('/producto/:id', (req, res) => {
       console.error(err.message);
       res.status(500).send('Error al consultar la base de datos');
     } else {
-      // Si el usuario está logueado, obtener su calificación para este producto
-      if (req.session.loggedin) {
-        let sqlCalificacion = 'SELECT calificacion FROM calificaciones WHERE usuario_id = ? AND producto_id = ?';
-        
-        db.get(sqlCalificacion, [req.session.name, req.params.id], (err, rowCalificacion) => {
-          if (err) {
-            console.error(err.message);
-            res.status(500).send('Error al consultar la base de datos');
+      // Calcula el promedio de las calificaciones del producto
+      const sqlAverage = 'SELECT AVG(calificacion) as promedio FROM calificaciones WHERE producto_id = ?';
+      db.get(sqlAverage, [req.params.id], (err, rowAverage) => {
+        if (err) {
+          console.error(err.message);
+          res.status(500).send('Error al consultar la base de datos');
+        } else {
+          // Si el usuario está logueado, obtener su calificación para este producto
+          if (req.session.loggedin) {
+            let sqlCalificacion = 'SELECT calificacion FROM calificaciones WHERE usuario_id = ? AND producto_id = ?';
+            
+            db.get(sqlCalificacion, [req.session.name, req.params.id], (err, rowCalificacion) => {
+              if (err) {
+                console.error(err.message);
+                res.status(500).send('Error al consultar la base de datos');
+              } else {
+                // Renderizar la vista y pasar el producto, el nombre del usuario, la calificación y el promedio
+              
+                let promedio = rowAverage.promedio ? rowAverage.promedio.toFixed(1) : 'N/A';
+                res.render('vista_producto', { producto: row, name: req.session.name, calificacion: rowCalificacion ? rowCalificacion.calificacion : 0, promedio: promedio});
+              }
+            });
           } else {
-            // console.log('Calificación:', rowCalificacion ? rowCalificacion.calificacion : 0);
-            // Renderizar la vista y pasar el producto, el nombre del usuario y la calificación
-            res.render('vista_producto', { producto: row, name: req.session.name, calificacion: rowCalificacion ? rowCalificacion.calificacion : 0 });
-            // console.log(calificaion)
+            // Si el usuario no está logueado, renderizar la vista sin calificación pero con el promedio
+            let promedio = rowAverage.promedio ? rowAverage.promedio.toFixed(1) : 'N/A';
+            res.render('vista_producto', { producto: row, name: req.session.name, calificacion: 0, promedio: promedio });
           }
-        });
-      } else {
-        
-        // Si el usuario no está logueado, renderizar la vista sin calificación
-        res.render('vista_producto', { producto: row, name: req.session.name, calificacion: 0 });
+        }
+      });
+    }
+  });
+});
+
+
+router.get('/', (req, res) => {
+  let sqlCategorias = 'SELECT DISTINCT nombre FROM categorias';
+  db.all(sqlCategorias, [], (err, categorias) => {
+    if (err) {
+      console.error(err.message);
+      res.status(500).send('Error al consultar la base de datos');
+    } else {
+      let sql = 'SELECT productos.*, categorias.nombre AS categoria, imagenes.url AS imagen_destacada, COALESCE(AVG(calificaciones.calificacion), 0) as promedio FROM productos LEFT JOIN categorias ON productos.categoria_id = categorias.id LEFT JOIN imagenes ON productos.id = imagenes.producto_id LEFT JOIN calificaciones ON productos.id = calificaciones.producto_id WHERE imagenes.destacado = 1';
+      let params = [];
+
+      if (req.query.nombre) {
+        sql += ' AND productos.nombre LIKE ?';
+        params.push('%' + req.query.nombre + '%');
       }
+
+      if (req.query.promedio) {
+        sql += ' GROUP BY productos.id HAVING COALESCE(AVG(calificaciones.calificacion), 0) >= ? AND COALESCE(AVG(calificaciones.calificacion), 0) < ?';
+        params.push(req.query.promedio, parseInt(req.query.promedio) + 1);
+      } else {
+        sql += ' GROUP BY productos.id';
+      }
+
+      if (req.query.peso) {
+        sql += ' AND productos.peso LIKE ?';
+        params.push('%' + req.query.peso + '%');
+      }
+
+      if (req.query.categoria) {
+        sql += ' AND categorias.nombre LIKE ?';
+        params.push('%' + req.query.categoria + '%');
+      }
+
+      if (req.query.marca) {
+        sql += ' AND productos.marca LIKE ?';
+        params.push('%' + req.query.marca + '%');
+      }
+
+      if (req.query.descripcion) {
+        sql += ' AND productos.descripcion LIKE ?';
+        params.push('%' + req.query.descripcion + '%');
+      }
+
+      console.log("SQL:", sql); // Agrega esta línea
+      console.log("Params:", params); // Agrega esta línea
+
+      db.all(sql, params, (err, rows) => {
+        if (err) {
+          console.error(err.message);
+          res.status(500).send('Error al consultar la base de datos');
+        } else {
+          let mensaje = '';
+          if (rows.length === 0) {
+            mensaje = 'No se encontraron productos que coincidan con tu búsqueda.';
+          }
+          
+          // Formatea el promedio con un decimal
+          rows.forEach(row => {
+            row.promedio = row.promedio ? row.promedio.toFixed(1) : 'Sin calificaciones';
+          });
+
+          res.render('productos_listado', { data: rows, categorias: categorias, mensaje: mensaje, name: req.session.name });
+        }
+      });
     }
   });
 });
 
 
 
-router.get('/', (req, res) => {
-  // if(req.session.loggedin == true){
-    let sqlCategorias = 'SELECT DISTINCT nombre FROM categorias';
-    db.all(sqlCategorias, [], (err, categorias) => {
-      if (err) {
-        console.error(err.message);
-        res.status(500).send('Error al consultar la base de datos');
-      } else {
-        let sql = 'SELECT productos.*, categorias.nombre AS categoria, imagenes.url AS imagen_destacada FROM productos LEFT JOIN categorias ON productos.categoria_id = categorias.id LEFT JOIN imagenes ON productos.id = imagenes.producto_id WHERE imagenes.destacado = 1';
-        let params = [];
-  
-        if (req.query.nombre) {
-          sql += ' AND productos.nombre LIKE ?';
-          params.push('%' + req.query.nombre + '%');
-        }
-  
-        if (req.query.peso) {
-          sql += ' AND productos.peso LIKE ?';
-          params.push('%' + req.query.peso + '%');
-        }
-  
-        if (req.query.categoria) {
-          sql += ' AND categorias.nombre LIKE ?';
-          params.push('%' + req.query.categoria + '%');
-        }
-  
-        if (req.query.marca) {
-          sql += ' AND productos.marca LIKE ?';
-          params.push('%' + req.query.marca + '%');
-        }
-  
-        if (req.query.descripcion) {
-          sql += ' AND productos.descripcion LIKE ?';
-          params.push('%' + req.query.descripcion + '%');
-        }
-  
-        db.all(sql, params, (err, rows) => {
-          if (err) {
-            console.error(err.message);
-            res.status(500).send('Error al consultar la base de datos');
-          } else {
-            let mensaje = '';
-            if (rows.length === 0) {
-              mensaje = 'No se encontraron productos que coincidan con tu búsqueda.';
-            }
-            
-            res.render('productos_listado', { data: rows, categorias: categorias, mensaje: mensaje, name: req.session.name });
-          }
-        });
-      }
-    });
-// } else {
-//     res.redirect('/loginUser')
-// }
-  
-});
 
 router.get('/productos', (req, res) => {
   db.all('SELECT * FROM categorias', (err, rows) => {

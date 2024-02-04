@@ -1,6 +1,19 @@
 const bcrypt = require('bcrypt');
 const { off } = require('../../../app');
 const sqlite3 = require('sqlite3').verbose();
+const nodemailer = require('nodemailer');
+require('dotenv').config()
+const EMAILUSER = process.env.EMAILUSER
+const PASSEMAIL= process.env.PASSEMAIL
+
+// Configura el transporte de correo
+let transporter = nodemailer.createTransport({
+  service: 'gmail', // usa el servicio de Gmail
+  auth: {
+    user: 'kendalltrece@gmail.com', // tu correo
+    pass: 'wolootvvtmvrwjri' // tu contraseña
+  }
+});
 
 let db = new sqlite3.Database('db.sqlite', (err) => {
     if (err) {
@@ -63,17 +76,24 @@ function storeUser(req, res){
                     } else {
                         req.session.loggedin = true;
                         req.session.name = data.email
-                        // console.log('agregado')
-                        res.redirect('/')
-                        // db.all('SELECT * FROM usuarios', [], (err, rows) => {
-                        //         if (err) {
-                        //           throw err;
-                        //         }
-                        //         rows.forEach((row) => {
-                        //           console.log(row);
-                        //         });
-                        //       });
-                        // //   res.render('registrar_usuarios', {success: 'Usuario registrado con éxito!'});
+                        // Configura el correo
+                        let mailOptions = {
+                            from: 'kendalltrece@gmail.com',
+                            to: data.email,
+                            subject: 'Bienvenido a Fishup - Productos de pesca',
+                            text: 'Gracias por registrarte en nuestra página. ¡Esperamos que disfrutes tu experiencia!'
+                          };
+  
+                          // Envia el correo
+                          transporter.sendMail(mailOptions, (error, info) => {
+                            if (error) {
+                              console.log(error);
+                            } else {
+                              console.log('Email enviado: ' + info.response);
+                            }
+                          });
+  
+                          res.redirect('/')
                     }
                   });
             })
