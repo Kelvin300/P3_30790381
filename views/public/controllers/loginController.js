@@ -10,8 +10,8 @@ const PASSEMAIL= process.env.PASSEMAIL
 let transporter = nodemailer.createTransport({
   service: 'gmail', // usa el servicio de Gmail
   auth: {
-    user: 'kendalltrece@gmail.com', // tu correo
-    pass: 'wolootvvtmvrwjri' // tu contraseña
+    user: EMAILUSER, // tu correo
+    pass: PASSEMAIL // tu contraseña
   }
 });
 

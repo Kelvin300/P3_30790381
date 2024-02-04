@@ -10,6 +10,8 @@ const axios = require('axios');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
+const EMAILUSER = process.env.EMAILUSER
+const PASSEMAIL= process.env.PASSEMAIL
 
 router.post('/actualizarPass/:token', (req, res) => {
   // Busca el token en la base de datos
@@ -74,7 +76,7 @@ router.post('/recuperarPass', (req, res) => {
         from: 'Fishup Store',
         to: req.body.email,
         subject: 'Recuperación de Contraseña',
-        text: 'Para recuperar tu contraseña, por favor visita el siguiente enlace: \nhttp://' + req.headers.host + '/recuperarPass/' + token
+        text: 'Para recuperar tu contraseña, por favor visita el siguiente enlace: https://task1-interfaz-administrativa-sqlite.onrender.com/recuperarPass/' + token
       };
 
       // Envia el correo
@@ -99,8 +101,8 @@ router.get('/recuperarPass', (req, res) => {
 let transporter = nodemailer.createTransport({
   service: 'gmail', // usa el servicio de Gmail
   auth: {
-    user: 'kendalltrece@gmail.com', // tu correo
-    pass: 'wolootvvtmvrwjri' // tu contraseña
+    user: EMAILUSER, // tu correo
+    pass: PASSEMAIL // tu contraseña
   }
 });
 
