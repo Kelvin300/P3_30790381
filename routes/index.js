@@ -130,7 +130,7 @@ router.post('/submit-payment', (req, res) => {
       }
 
       let mailOptions = {
-        from: 'kendalltrece@gmail.com',
+        from: 'Fishup Store',
         to: cliente_id,
         subject: 'Has Comprado un producto!' ,
         text: 'Has comprado 1 ' + req.body.productName + ' $' + req.body.productPrice
@@ -460,6 +460,32 @@ router.post('/categorias/create', (req, res) => {
 })
 
 // Vista principal-------------------------------------------------------
+// router.get('/tablas', (req, res) => {
+//   db.all('SELECT * FROM productos', (err, rows) => {
+//     if (err) {
+//       console.error(err.message);
+//       res.status(500).send('Error al consultar la base de datos');
+//     } else {
+//       db.all('SELECT * FROM categorias', (err, rows2) => {
+//         if (err) {
+//           console.error(err.message);
+//           res.status(500).send('Error al consultar la base de datos');
+//         } else {
+//           db.all('SELECT * FROM imagenes', (err, rows3) => {
+//             if(err) {
+//               console.error(err.message)
+//               res.status(500).send('Error al consultar la base de datos')
+//             } else {
+//               res.render('tablas', { data: rows, data2: rows2 , data3:rows3});
+//             }
+//           })
+          
+//         }
+//       });
+//     }
+//   });
+// });
+
 router.get('/tablas', (req, res) => {
   db.all('SELECT * FROM productos', (err, rows) => {
     if (err) {
@@ -476,15 +502,30 @@ router.get('/tablas', (req, res) => {
               console.error(err.message)
               res.status(500).send('Error al consultar la base de datos')
             } else {
-              res.render('tablas', { data: rows, data2: rows2 , data3:rows3});
+              db.all('SELECT * FROM usuarios', (err, rows4) => {
+                if(err) {
+                  console.error(err.message)
+                  res.status(500).send('Error al consultar la base de datos')
+                } else {
+                  db.all('SELECT * FROM compras', (err, rows5) => {
+                    if(err) {
+                      console.error(err.message)
+                      res.status(500).send('Error al consultar la base de datos')
+                    } else {
+                      res.render('tablas', { data: rows, data2: rows2 , data3:rows3, data4:rows4, data5:rows5});
+                    }
+                  })
+                }
+              })
             }
           })
-          
         }
       });
     }
   });
 });
+
+
 
 router.get('/categorias', (req, res) => {
   db.all('SELECT * FROM categorias', (err, rows) => {
