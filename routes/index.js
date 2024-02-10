@@ -120,7 +120,7 @@ router.post('/submit-payment', (req, res) => {
     const cantidad = 1; // Ajusta esto con la cantidad
     const total_pagado = req.body.productPrice; // Ajusta esto con el total pagado
     const fecha = new Date().toISOString();
-    const ip_cliente = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress;
+    const ip_cliente = req.headers['x-forwarded-for'];
 
     const sql = `INSERT INTO compras (cliente_id, producto_id, cantidad, total_pagado, fecha, ip_cliente) VALUES (?, ?, ?, ?, ?, ?)`;
 
