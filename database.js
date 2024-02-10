@@ -50,6 +50,20 @@ db.serialize(() => {
     console.log('Tabla usuarios OK');
   });
 
+  // db.run('DROP TABLE IF EXISTS usuarios', (err) => {
+  //   if (err) {
+  //     console.error(err.message);
+  //   }
+  //   console.log('Tabla usuarios eliminada');
+  // });
+
+  // db.run('DROP TABLE IF EXISTS compras', (err) => {
+  //   if (err) {
+  //     console.error(err.message);
+  //   }
+  //   console.log('Tabla compras eliminada');
+  // });
+
   db.run(`CREATE TABLE IF NOT EXISTS compras (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     cliente_id INTEGER,
