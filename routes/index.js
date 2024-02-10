@@ -88,7 +88,7 @@ router.post('/recuperarPass', (req, res) => {
         }
       });
 
-      res.redirect('/loginUser');
+      res.render('passEnv');
     }
   });
 });
