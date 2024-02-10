@@ -12,6 +12,7 @@ const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const EMAILUSER = process.env.EMAILUSER
 const PASSEMAIL= process.env.PASSEMAIL
+const requestIp= require('request-ip');
 
 router.post('/actualizarPass/:token', (req, res) => {
   // Busca el token en la base de datos
@@ -120,7 +121,9 @@ router.post('/submit-payment', (req, res) => {
     const cantidad = 1; // Ajusta esto con la cantidad
     const total_pagado = req.body.productPrice; // Ajusta esto con el total pagado
     const fecha = new Date().toISOString();
-    const ip_cliente =  req.headers['x-real-ip'] ;
+    const clientIp = requestIp.getClientIp(req)
+    const ip_cliente = clientIp
+    
 
     const sql = `INSERT INTO compras (cliente_id, producto_id, cantidad, total_pagado, fecha, ip_cliente) VALUES (?, ?, ?, ?, ?, ?)`;
 
